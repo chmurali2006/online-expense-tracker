@@ -4,7 +4,7 @@ from app import queries
 def test_TC_026_register_creates_account_and_default_categories(client, auth, app):
     response = auth.register("riya")
     assert response.status_code == 302
-    assert response.headers["Location"].rstrip("/").endswith("/expenses")
+    assert response.headers["Location"].rstrip("/").endswith("/dashboard")
 
     page = client.get("/expenses/")
     text = page.get_data(as_text=True)
@@ -16,6 +16,13 @@ def test_TC_026_register_creates_account_and_default_categories(client, auth, ap
         assert user is not None
         assert len(queries.list_categories(user["id"])) == 8
         assert "secret123" not in user["password_hash"]
+
+
+def test_root_redirects_to_dashboard(client, auth):
+    auth.register("riya")
+    response = client.get("/")
+    assert response.status_code == 302
+    assert response.headers["Location"] == "/dashboard/"
 
 
 def test_TC_027_duplicate_registration_is_refused(client, auth, app):
@@ -99,7 +106,7 @@ def test_backslash_redirect_target_is_not_accepted(client, auth):
     auth.logout()
     response = auth.login("riya", "secret123", path="/auth/login?next=/%5Cevil.example")
     assert response.status_code == 302
-    assert response.headers["Location"] == "/expenses/"
+    assert response.headers["Location"] == "/dashboard/"
 
 
 def test_short_password_is_reported_inline(client, auth):

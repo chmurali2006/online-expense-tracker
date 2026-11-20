@@ -83,7 +83,7 @@ def load_page(filters, page):
 def index():
     if g.user is None:
         return redirect(url_for("auth.login", next=request.path))
-    return redirect(url_for("expenses.list"))
+    return redirect(url_for("dashboard.index"))
 
 
 @bp.route("/expenses", methods=("GET", "POST"))

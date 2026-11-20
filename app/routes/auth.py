@@ -27,7 +27,7 @@ def register():
             session["user_id"] = user_id
             session.permanent = True
             flash("Account created")
-            return redirect(url_for("expenses.list"))
+            return redirect(url_for("dashboard.index"))
 
     return render_template("auth/register.html", errors=errors, username=username)
 
@@ -57,7 +57,7 @@ def login():
                     and "\n" not in target
                 ):
                     return redirect(target)
-                return redirect(url_for("expenses.list"))
+                return redirect(url_for("dashboard.index"))
             errors["password"] = "Wrong username or password"
 
     return render_template("auth/login.html", errors=errors, username=username)

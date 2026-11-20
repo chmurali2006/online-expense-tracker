@@ -58,7 +58,7 @@ The plan asked for about 35 cases. We ended with 51 because traceability pulled 
 | TC-023 | FR-25 | Wrong header | `Date;Category;Amount` | header message | same | Pass |
 | TC-024 | FR-26 | Only clean rows marked valid | good row, `abc` amount, `cheque` method | 1 valid of 3 | same | Pass |
 | TC-025 | FR-24 | Export header and row order | two known rows | exact header and rows | same | Pass |
-| TC-026 | FR-1 | Register a new account | username `riya`, password `secret123` | redirect to the list, 8 default categories, hash not plain text | same | Pass |
+| TC-026 | FR-1 | Register a new account | username `riya`, password `secret123` | redirect to the dashboard, 8 default categories, hash not plain text | same | Pass |
 | TC-027 | FR-1 | Duplicate registration | same username twice | "Username already taken", one account only | same | Pass |
 | TC-028 | FR-2 | Wrong password | correct user, wrong password | "Wrong username or password" on the same page | same | Pass |
 | TC-029 | FR-2 | Logout ends the session | logout then open the list | redirected to the login page | same | Pass |
@@ -129,7 +129,7 @@ The plan asked for about 35 cases. We ended with 51 because traceability pulled 
 | ID | Found by | What happened | Cause | Fix |
 | --- | --- | --- | --- | --- |
 | DEF-001 | TC-025 | Exported files opened with a blank last line and our own row checks failed on the line endings | `csv.writer` writes `\r\n` by default | Pass `lineterminator="\n"` when building the export |
-| DEF-002 | TC-026 | After registering, the browser showed a 500 instead of the expense list | The route redirected to an endpoint that did not exist after we renamed the list view during the first refactor | Redirect with `url_for("expenses.list")` and added the register step to the integration tests so a broken redirect fails the build |
+| DEF-002 | TC-026 | After registering, the browser showed a 500 instead of the dashboard | The route redirected to an endpoint that did not exist after we renamed the view during the first refactor | Redirect with `url_for("dashboard.index")` and added the register step to the integration tests so a broken redirect fails the build |
 | DEF-003 | TC-041 | Deleting a category that still held expenses returned a 500 and left rows pointing at a removed category | The first version deleted the row before counting its expenses, and SQLite refused with a foreign key error | Count first, show the move form, and only delete after the expenses have been moved in one statement |
 | DEF-004 | TC-019, TC-044 | The daily chart drew one bar for each day that had spending, so March showed 6 bars and the axis lost its shape | The query returns grouped rows and we passed them straight to the chart | `daily_series` now returns one value for every day of the month and fills the gaps with 0 |
 
