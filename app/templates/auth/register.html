@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Register · Expense Tracker{% endblock %}
+{% block content %}
+<div class="auth-card narrow">
+  <h1>Register</h1>
+  <p class="muted small">One account, eight starting categories.</p>
+
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field {{ 'has-error' if errors.username }}">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" value="{{ username }}" placeholder="riya.k" autofocus>
+      {% if errors.username %}<div class="field-error">{{ errors.username }}</div>{% endif %}
+    </div>
+    <div class="field {{ 'has-error' if errors.password }}">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" placeholder="At least 8 characters">
+      {% if errors.password %}<div class="field-error">{{ errors.password }}</div>{% endif %}
+    </div>
+    <div class="field {{ 'has-error' if errors.confirm }}">
+      <label for="confirm">Repeat password</label>
+      <input id="confirm" name="confirm" type="password" placeholder="Type it again">
+      {% if errors.confirm %}<div class="field-error">{{ errors.confirm }}</div>{% endif %}
+    </div>
+    <div class="actions">
+      <button class="btn" type="submit">Register</button>
+      <a href="{{ url_for('auth.login') }}">I already have an account</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

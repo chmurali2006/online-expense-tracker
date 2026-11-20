@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Categories · Expense Tracker{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Categories</h1>
+    <p class="sub">Eight come with a new account. You can rename them and add your own.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Add a category</h2></div>
+  <form method="post" action="{{ url_for('categories.index') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-row">
+      <div class="field {{ 'has-error' if errors.name }}">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" value="{{ form_name }}" placeholder="Metro card">
+        {% if errors.name %}<div class="field-error">{{ errors.name }}</div>{% endif %}
+      </div>
+      <button class="btn" type="submit">Add category</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Your categories</h2>
+    <span class="eyebrow">{{ rows|length }} total</span>
+  </div>
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="table-dense responsive-cards">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col" class="right">Expenses</th>
+          <th scope="col">Rename</th>
+          <th scope="col" class="right">Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td data-label="Name">
+            <span class="name-cell">
+              {{ row.name }}
+              {% if row.is_default %}<span class="tag">default</span>{% endif %}
+            </span>
+          </td>
+          <td class="right count" data-label="Expenses">{{ row.expense_count }}</td>
+          <td data-label="Rename">
+            <form class="rename-form" method="post" action="{{ url_for('categories.rename', category_id=row.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <label class="small muted" for="rename-{{ row.id }}">New name</label>
+              <input id="rename-{{ row.id }}" name="name" type="text" value="{{ row.name }}">
+              <button class="btn btn-quiet" type="submit">Rename</button>
+            </form>
+          </td>
+          <td class="right" data-label="Remove">
+            <div class="row-actions">
+              <a href="{{ url_for('categories.delete', category_id=row.id) }}">Delete</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Nothing here yet. Add your first category above.</div>
+  {% endif %}
+</div>
+{% endblock %}

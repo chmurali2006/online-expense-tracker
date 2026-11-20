@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Bad request · Expense Tracker{% endblock %}
+{% block content %}
+<div class="card error-page" style="max-width: 520px;">
+  <p class="code">400</p>
+  <h1>Bad request</h1>
+  <p class="muted">The form token was missing or did not match. Go back, reload the page and try again.</p>
+  <p><a href="{{ url_for('expenses.list') }}">Back to the expense list</a></p>
+</div>
+{% endblock %}

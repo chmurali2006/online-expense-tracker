@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Expenses · Expense Tracker{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Expenses</h1>
+    <p class="sub">{{ total }} {{ 'row' if total == 1 else 'rows' }}{% if empty_reason %} after filtering{% endif %}</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn-quiet" href="{{ url_for('data.export') }}{% if qs %}?{{ qs }}{% endif %}">Export CSV</a>
+    <a class="btn btn-quiet" href="{{ url_for('expenses.new') }}">Full add form</a>
+  </div>
+</div>
+
+<form class="filters" method="get" action="{{ url_for('expenses.list') }}">
+  <div class="filters-heading">Filters</div>
+  <div class="field">
+    <label for="date_from">From</label>
+    <input id="date_from" name="date_from" type="date" value="{{ filters.date_from }}">
+  </div>
+  <div class="field">
+    <label for="date_to">To</label>
+    <input id="date_to" name="date_to" type="date" value="{{ filters.date_to }}">
+  </div>
+  <div class="field">
+    <label for="category_id">Category</label>
+    <select id="category_id" name="category_id">
+      <option value="">All</option>
+      {% for category in categories %}
+        <option value="{{ category.id }}" {{ 'selected' if filters.category_id == category.id|string }}>{{ category.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label for="method">Payment method</label>
+    <select id="method" name="method">
+      <option value="">All</option>
+      {% for method in payment_methods %}
+        <option value="{{ method }}" {{ 'selected' if filters.method == method }}>{{ method }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field grow">
+    <label for="q">Search note</label>
+    <input id="q" name="q" type="text" value="{{ filters.q }}" placeholder="Auto fare to college">
+  </div>
+  <div class="field">
+    <label for="sort">Sort by</label>
+    <select id="sort" name="sort">
+      <option value="date" {{ 'selected' if filters.sort == 'date' }}>Date</option>
+      <option value="amount" {{ 'selected' if filters.sort == 'amount' }}>Amount</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="direction">Order</label>
+    <select id="direction" name="direction">
+      <option value="desc" {{ 'selected' if filters.direction == 'desc' }}>Highest first</option>
+      <option value="asc" {{ 'selected' if filters.direction == 'asc' }}>Lowest first</option>
+    </select>
+  </div>
+  <button class="btn" type="submit">Apply</button>
+  <a class="linklike" href="{{ url_for('expenses.list') }}">Clear</a>
+</form>
+
+<form class="quick-add" method="post" action="{{ url_for('expenses.list') }}{% if qs %}?{{ qs }}{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="eyebrow">Quick add</div>
+  {% set qa_date = quick_add.date or filters.date_from or today %}
+  {% set qa_category = quick_add.category_id or filters.category_id %}
+  {% set qa_method = quick_add.payment_method %}
+  <div class="form-row">
+    <div class="field">
+      <label for="qa-amount">Amount</label>
+      <input id="qa-amount" name="amount" type="text" inputmode="decimal" value="{{ quick_add.amount or '' }}" placeholder="150.00">
+    </div>
+    <div class="field">
+      <label for="qa-date">Date</label>
+      <input id="qa-date" name="date" type="date" value="{{ qa_date }}">
+    </div>
+    <div class="field">
+      <label for="qa-category">Category</label>
+      <select id="qa-category" name="category_id">
+        {% for category in categories %}
+          <option value="{{ category.id }}" {{ 'selected' if qa_category == category.id|string }}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="qa-method">Payment method</label>
+      <select id="qa-method" name="payment_method">
+        {% for method in payment_methods %}
+          <option value="{{ method }}" {{ 'selected' if qa_method == method }}>{{ method }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="qa-note">Note</label>
+      <input id="qa-note" name="note" type="text" class="wide" value="{{ quick_add.note or '' }}" placeholder="Auto fare to college">
+    </div>
+    <button class="btn" type="submit">Add expense</button>
+  </div>
+</form>
+
+{% if rows %}
+<div class="table-wrap">
+  <table class="table-dense responsive-cards">
+    <thead>
+      <tr>
+        <th scope="col">Date</th>
+        <th scope="col">Category</th>
+        <th scope="col">Note</th>
+        <th scope="col">Method</th>
+        <th scope="col" class="right">Amount</th>
+        <th scope="col" class="right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td class="date" data-label="Date">{{ row.date }}</td>
+        <td data-label="Category">{{ row.category_name }}</td>
+        <td data-label="Note">{{ row.note }}</td>
+        <td data-label="Method">{{ row.payment_method }}</td>
+        <td class="num" data-label="Amount">{{ format_inr(row.amount) }}</td>
+        <td data-label="Actions">
+          <div class="row-actions">
+            <a href="{{ url_for('expenses.edit', expense_id=row.id) }}">Edit</a>
+            <a href="{{ url_for('expenses.delete', expense_id=row.id) }}">Delete</a>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="pager">
+  <span>Page {{ page }} of {{ pages }}</span>
+  <div class="pages">
+    {% if page > 1 %}
+      <a href="{{ url_for('expenses.list') }}?{{ query_before }}">Previous</a>
+    {% else %}
+      <span class="off">Previous</span>
+    {% endif %}
+    {% if page < pages %}
+      <a href="{{ url_for('expenses.list') }}?{{ query_next }}">Next</a>
+    {% else %}
+      <span class="off">Next</span>
+    {% endif %}
+  </div>
+</div>
+{% elif empty_reason %}
+  <div class="empty">No expenses match these filters. <a href="{{ url_for('expenses.list') }}">Clear the filters</a>.</div>
+{% else %}
+  <div class="empty">Nothing here yet. Add your first expense above.</div>
+{% endif %}
+{% endblock %}

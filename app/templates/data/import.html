@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Import CSV · Expense Tracker{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Import CSV</h1>
+    <p class="sub">Nothing is saved until you have seen the preview and confirmed.</p>
+  </div>
+</div>
+
+<div class="card" style="max-width: 640px;">
+  <form method="post" action="{{ url_for('data.upload') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="file">CSV file</label>
+      <input id="file" name="file" type="file" accept=".csv,text/csv">
+      <p class="hint">Header must be <span class="mono">date,category,amount,payment_method,note</span></p>
+    </div>
+    <div class="actions">
+      <button class="btn" type="submit">Preview file</button>
+      <a href="{{ url_for('expenses.list') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Example</h2></div>
+  <pre class="mono small" style="margin:0;">date,category,amount,payment_method,note
+2026-03-04,Food,180.00,UPI,Canteen lunch
+2026-03-05,Travel,45.00,cash,Auto fare to college</pre>
+</div>
+{% endblock %}

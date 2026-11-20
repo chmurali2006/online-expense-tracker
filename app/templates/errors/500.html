@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Something went wrong · Expense Tracker{% endblock %}
+{% block content %}
+<div class="card error-page" style="max-width: 520px;">
+  <p class="code">500</p>
+  <h1>Something went wrong</h1>
+  <p class="muted">The server could not finish this request. Your saved data is safe &mdash; reload the page and try again.</p>
+  <p><a href="{{ url_for('expenses.list') }}">Back to the expense list</a></p>
+</div>
+{% endblock %}

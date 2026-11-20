@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Delete expense · Expense Tracker{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 560px;">
+  <h1>Delete this expense?</h1>
+  <p class="muted">It will be removed for good. There is no undo.</p>
+
+  <table>
+    <tbody>
+      <tr>
+        <th scope="row" class="muted">Date</th>
+        <td class="date">{{ expense.date }}</td>
+      </tr>
+      <tr>
+        <th scope="row" class="muted">Category</th>
+        <td>{{ expense.category_name }}</td>
+      </tr>
+      <tr>
+        <th scope="row" class="muted">Note</th>
+        <td>{{ expense.note or 'no note' }}</td>
+      </tr>
+      <tr>
+        <th scope="row" class="muted">Amount</th>
+        <td class="num">{{ format_inr(expense.amount) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <form method="post" style="margin-top: 18px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="actions">
+      <button class="btn btn-danger" type="submit">Yes, delete</button>
+      <a href="{{ url_for('expenses.list') }}">Keep it</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

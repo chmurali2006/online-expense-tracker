@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Page not found · Expense Tracker{% endblock %}
+{% block content %}
+<div class="card error-page" style="max-width: 520px;">
+  <p class="code">404</p>
+  <h1>Page not found</h1>
+  <p class="muted">That address does not exist in this app.</p>
+  <p><a href="{{ url_for('expenses.list') }}">Back to the expense list</a></p>
+</div>
+{% endblock %}

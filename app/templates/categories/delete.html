@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Delete category · Expense Tracker{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 620px;">
+  <h1>This category is in use</h1>
+  <p class="muted">
+    <span class="mono">{{ count }}</span>
+    {{ 'expense sits' if count == 1 else 'expenses sit' }} in {{ category.name }}.
+    Choose the category that should take them, then this one can go.
+  </p>
+  <p class="muted small">Any budget set for {{ category.name }} will be removed too.</p>
+
+  <form method="post" action="{{ url_for('categories.delete', category_id=category.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field {{ 'has-error' if error }}">
+      <label for="move_to">Move all {{ count }} expenses to</label>
+      <select id="move_to" name="move_to">
+        <option value="">Choose a category</option>
+        {% for other in others %}
+          <option value="{{ other.id }}">{{ other.name }}</option>
+        {% endfor %}
+      </select>
+      {% if error %}<div class="field-error">Choose the category that takes these expenses</div>{% endif %}
+    </div>
+    <div class="actions">
+      <button class="btn btn-danger" type="submit">Move and delete</button>
+      <a href="{{ url_for('categories.index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

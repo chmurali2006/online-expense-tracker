@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Delete category · Expense Tracker{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 520px;">
+  <h1>Delete {{ category.name }}?</h1>
+  <p class="muted">No expenses use it. Any budget set for {{ category.name }} will be removed too.</p>
+  <form method="post" action="{{ url_for('categories.delete', category_id=category.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="actions">
+      <button class="btn btn-danger" type="submit">Yes, delete</button>
+      <a href="{{ url_for('categories.index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

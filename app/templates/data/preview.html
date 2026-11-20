@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Import preview · Expense Tracker{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Check the file</h1>
+    <p class="sub">{{ filename }}</p>
+  </div>
+</div>
+
+{% set good = rows|selectattr('valid')|list %}
+{% set bad = rows|rejectattr('valid')|list %}
+
+<p class="summary-line">
+  {{ rows|length }} {{ 'row' if rows|length == 1 else 'rows' }} read · {{ good|length }} valid · {{ bad|length }} with problems
+</p>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table-dense preview-table responsive-cards">
+      <thead>
+        <tr>
+          <th scope="col">Line</th>
+          <th scope="col">Date</th>
+          <th scope="col">Category</th>
+          <th scope="col" class="right">Amount</th>
+          <th scope="col">Method</th>
+          <th scope="col">Note</th>
+          <th scope="col">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td class="date" data-label="Line">{{ row.line_no }}</td>
+          <td class="date" data-label="Date">{{ row.date }}</td>
+          <td data-label="Category">{{ row.category }}</td>
+          <td class="num" data-label="Amount">{{ format_inr(row.amount) if row.amount is not none else '—' }}</td>
+          <td data-label="Method">{{ row.payment_method or '—' }}</td>
+          <td data-label="Note">{{ row.note }}</td>
+          <td data-label="Result" class="{{ 'bad' if not row.valid else 'good' }}">{{ row.error if row.error else 'ready' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<form method="post" action="{{ url_for('data.preview') }}" style="margin-top: 16px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="actions">
+    <button class="btn" type="submit" name="action" value="import" {{ 'disabled' if not good }}>
+      Import {{ good|length }} valid {{ 'row' if good|length == 1 else 'rows' }}
+    </button>
+    <button class="btn btn-quiet" type="submit" name="action" value="cancel">Cancel</button>
+    <span class="muted small">{{ bad|length }} {{ 'row' if bad|length == 1 else 'rows' }} will be skipped.</span>
+  </div>
+</form>
+{% endblock %}

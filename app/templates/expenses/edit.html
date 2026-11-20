@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Edit expense · Expense Tracker{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Edit expense</h1>
+    <p class="sub">Row {{ expense.id }}, added on {{ expense.created_at }}.</p>
+  </div>
+</div>
+
+<div class="card" style="max-width: 640px;">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-grid">
+      <div class="field {{ 'has-error' if errors.amount }}">
+        <label for="amount">Amount</label>
+        <input id="amount" name="amount" type="text" inputmode="decimal" value="{{ expense.amount }}" placeholder="150.00">
+        {% if errors.amount %}<div class="field-error">{{ errors.amount }}</div>{% endif %}
+      </div>
+      <div class="field {{ 'has-error' if errors.date }}">
+        <label for="date">Date</label>
+        <input id="date" name="date" type="date" value="{{ expense.date }}">
+        {% if errors.date %}<div class="field-error">{{ errors.date }}</div>{% endif %}
+      </div>
+      <div class="field {{ 'has-error' if errors.category_id }}">
+        <label for="category_id">Category</label>
+        <select id="category_id" name="category_id">
+          {% for category in categories %}
+            <option value="{{ category.id }}" {{ 'selected' if expense.category_id|string == category.id|string }}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        {% if errors.category_id %}<div class="field-error">{{ errors.category_id }}</div>{% endif %}
+      </div>
+      <div class="field {{ 'has-error' if errors.payment_method }}">
+        <label for="payment_method">Payment method</label>
+        <select id="payment_method" name="payment_method">
+          {% for method in payment_methods %}
+            <option value="{{ method }}" {{ 'selected' if expense.payment_method == method }}>{{ method }}</option>
+          {% endfor %}
+        </select>
+        {% if errors.payment_method %}<div class="field-error">{{ errors.payment_method }}</div>{% endif %}
+      </div>
+    </div>
+    <div class="field {{ 'has-error' if errors.note }}">
+      <label for="note">Note</label>
+      <input id="note" name="note" type="text" value="{{ expense.note }}" placeholder="Auto fare to college">
+      {% if errors.note %}<div class="field-error">{{ errors.note }}</div>{% endif %}
+    </div>
+    <div class="actions">
+      <button class="btn" type="submit">Save changes</button>
+      <a href="{{ url_for('expenses.list') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

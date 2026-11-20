@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Log in · Expense Tracker{% endblock %}
+{% block content %}
+<div class="auth-card narrow">
+  <h1>Log in</h1>
+  <p class="muted small">Your expenses are kept under your own account.</p>
+
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field {{ 'has-error' if errors.username }}">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" value="{{ username }}" placeholder="riya.k" autofocus>
+      {% if errors.username %}<div class="field-error">{{ errors.username }}</div>{% endif %}
+    </div>
+    <div class="field {{ 'has-error' if errors.password }}">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" placeholder="Your password">
+      {% if errors.password %}<div class="field-error">{{ errors.password }}</div>{% endif %}
+    </div>
+    <div class="actions">
+      <button class="btn" type="submit">Log in</button>
+      <a href="{{ url_for('auth.register') }}">Create an account</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

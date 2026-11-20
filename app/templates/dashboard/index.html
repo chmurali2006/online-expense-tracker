@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}{{ label }} · Expense Tracker{% endblock %}
+{% block content %}
+<div class="month-bar">
+  <div>
+    <p class="eyebrow">Month</p>
+    <h1>{{ label }}</h1>
+  </div>
+  <div class="month-switch">
+    <a href="{{ url_for('dashboard.index', month=prev_month) }}">&larr; {{ prev_month }}</a>
+    <span>{{ month }}</span>
+    <a class="{{ 'off' if month >= current_month }}" href="{{ url_for('dashboard.index', month=next_month) }}">{{ next_month }} &rarr;</a>
+  </div>
+</div>
+
+<div class="total-line">
+  <div class="total"><span class="cur">₹</span>{{ format_inr(summary.total) }}</div>
+  {% if summary.difference is not none %}
+  <div>
+    <div class="delta-label">against last month</div>
+    <div class="delta">
+      <span class="{{ 'up' if summary.difference > 0 else 'down' }}">{{ format_signed(summary.difference) }}</span>
+      {% if summary.percent is not none %}({{ format_percent(summary.percent) }}){% endif %}
+      from last month
+    </div>
+  </div>
+  {% else %}
+  <div>
+    <div class="delta-label">first month with data</div>
+    <div class="delta">No month to compare with</div>
+  </div>
+  {% endif %}
+</div>
+<p class="muted small">{{ summary.categories|length }} {{ 'category used' if summary.categories|length == 1 else 'categories used' }} in {{ label }}.</p>
+
+<div class="dash-grid">
+  <div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Spending by category</h2>
+        <span class="eyebrow">spent / budget</span>
+      </div>
+      {% if summary.categories %}
+        {% for item in summary.categories %}
+          {% set br = summary.budget_by_name.get(item.name) %}
+          <div class="budget-row">
+            <div class="budget-top">
+              <span class="budget-name">{{ item.name }}</span>
+              <span class="budget-figs">
+                {{ format_inr(item.total) }}
+                {% if br %}<span class="of">of {{ format_inr(br.budget) }}</span>{% endif %}
+              </span>
+            </div>
+            {% if br %}
+              <div class="bar {{ br.state }}"><span style="width: {{ br.width }}%;"></span></div>
+              <div class="budget-top">
+                <span class="tag {{ br.state }}">{{ br.label }}</span>
+                <span class="budget-pct">{{ fmt1(br.percent) }}%</span>
+              </div>
+            {% else %}
+              <div class="budget-top">
+                <span class="budget-pct">no budget set</span>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty">Nothing spent in this month yet.</div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>Over budget</h2></div>
+      {% if summary.over_budget %}
+        <ul class="over-list">
+          {% for row in summary.over_budget %}
+            <li>{{ row.category_name }} · {{ format_inr(row.spent) }} of {{ format_inr(row.budget) }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted">No category is over its budget in {{ label }}.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-head">
+        <h2>Daily spending</h2>
+        <span class="eyebrow">{{ chart_month }}</span>
+      </div>
+      <div class="chart-box" id="chart-box">
+        <canvas id="daily-chart" aria-label="Daily spending for {{ chart_month }}" role="img"></canvas>
+      </div>
+      <p class="chart-note">Bars are per day of the month. Days without spending stay empty.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Category split</h2>
+        <span class="eyebrow">{{ chart_month }}</span>
+      </div>
+      {% if chart_category_labels %}
+        <div class="pie-layout">
+          <div class="pie-box" id="pie-box">
+            <canvas id="category-chart" aria-label="Spending by category for {{ chart_month }}" role="img"></canvas>
+          </div>
+          <ul class="pie-legend">
+            {% for item in summary.categories %}
+            <li>
+              <span class="pie-dot" style="background: {{ chart_category_colors[loop.index0 % chart_category_colors|length] }}"></span>
+              <span class="pie-name">{{ item.name }}</span>
+              <span class="pie-value">{{ format_inr(item.total) }}</span>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% else %}
+        <div class="empty">Nothing spent in this month yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card section">
+  <div class="card-head">
+    <h2>Recent expenses</h2>
+    <a class="eyebrow" href="{{ url_for('expenses.list') }}">See all</a>
+  </div>
+  {% if summary.recent %}
+  <div class="table-wrap">
+    <table class="table-dense responsive-cards">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Category</th>
+          <th scope="col">Note</th>
+          <th scope="col">Method</th>
+          <th scope="col" class="right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in summary.recent %}
+        <tr>
+          <td class="date" data-label="Date">{{ row.date }}</td>
+          <td data-label="Category">{{ row.category_name }}</td>
+          <td data-label="Note">{{ row.note }}</td>
+          <td data-label="Method">{{ row.payment_method }}</td>
+          <td class="num" data-label="Amount">{{ format_inr(row.amount) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">Nothing here yet. Add your first expense above.</div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='vendor/chart.umd.js') }}"></script>
+<script id="dashboard-data" type="application/json">
+{
+  "labels": {{ chart_labels|tojson }},
+  "values": {{ chart_values|tojson }},
+  "categoryLabels": {{ chart_category_labels|tojson }},
+  "categoryValues": {{ chart_category_values|tojson }},
+  "categoryColors": {{ chart_category_colors|tojson }}
+}
+</script>
+<script>
+  window.dashboardChart = JSON.parse(document.getElementById("dashboard-data").textContent);
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Budgets · Expense Tracker{% endblock %}
+{% block content %}
+<div class="month-bar">
+  <div>
+    <h1>Budgets</h1>
+    <p class="sub">{{ label }}. One limit per category for the month.</p>
+  </div>
+  <div class="month-switch">
+    <a href="{{ url_for('budgets.index', month=prev_month) }}">&larr; {{ prev_month }}</a>
+    <span>{{ month }}</span>
+    <a class="{{ 'off' if month >= current_month }}" href="{{ url_for('budgets.index', month=next_month) }}">{{ next_month }} &rarr;</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>Set or change a budget</h2></div>
+  <form class="budget-form" method="post" action="{{ url_for('budgets.index') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="month" value="{{ month }}">
+    <div class="field">
+      <label for="b-category">Category</label>
+      <select id="b-category" name="category_id">
+        {% for category in categories %}
+          <option value="{{ category.id }}" {{ 'selected' if category.id in has_budget }}>{{ category.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="b-amount">Monthly amount</label>
+      <input id="b-amount" name="amount" type="text" inputmode="decimal" placeholder="4000.00">
+    </div>
+    <button class="btn" type="submit">Save budget</button>
+  </form>
+  <p class="hint">Ochre at 80 percent of the limit, brick once it is reached.</p>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>{{ label }}</h2>
+    <span class="eyebrow">{{ rows|length }} {{ 'budget' if rows|length == 1 else 'budgets' }}</span>
+  </div>
+
+  {% if rows %}
+    {% for row in rows %}
+    <div class="budget-row">
+      <div class="budget-top">
+        <span class="budget-name">{{ row.category_name }}</span>
+        <span class="budget-figs">
+          {{ format_inr(row.spent) }} <span class="of">of {{ format_inr(row.budget) }}</span>
+        </span>
+      </div>
+      <div class="bar {{ row.state }}"><span style="width: {{ row.width }}%;"></span></div>
+      <div class="budget-top">
+        <span class="tag {{ row.state }}">{{ row.label }}</span>
+        <span class="budget-pct">{{ fmt1(row.percent) }}%{% if row.left >= 0 %} · {{ format_inr(row.left) }} left{% else %} · {{ format_inr(-row.left) }} over{% endif %}</span>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty">No budget for this month yet. Pick a category and set one above.</div>
+  {% endif %}
+</div>
+{% endblock %}
